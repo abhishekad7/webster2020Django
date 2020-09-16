@@ -1,0 +1,130 @@
+{% load static %}
+<html>
+  <head>
+    <title>Create Poll</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+  </head>
+  <body>
+    <div class="form-style">
+      <form onsubmit="return false">
+        {% csrf_token %}
+        <fieldset>
+          <legend><span class="number">1</span>Poll Info</legend>
+          <input type="text" name="poll_name" id="poll_name" placeholder="Poll Name *">
+          <textarea name="poll_description" id="poll_description" placeholder="Poll Description"></textarea>
+        </fieldset>
+
+        <fieldset id="options-fieldset">
+          <legend><span class="number">2</span> Poll Options</legend>
+          <input type="text" data-type="option" name="option1" id="option1" placeholder="Option 1" onfocus="addOptionBefore(this)"/>
+          <input type="text" data-type="option" name="option2" id="option2" placeholder="Option 2" onfocus="addOptionBefore(this)"/>
+          
+        </fieldset>
+
+
+        <input type="submit" value="Save Poll" onclick="savePoll()" style="cursor: pointer;" />
+      </form>
+    </div>
+
+    <script>
+
+      var optionCount = 2;
+
+      function addOptionBefore(ele){
+        var optionElements = document.getElementsByTagName("input");
+        
+        //console.log(optionElements);
+
+        var flag = 0;
+        for(var i = 0; i < optionElements.length; i++){
+          var elem = optionElements[i];
+          if(elem.getAttribute("data-type") == "option"){
+            //console.log(elem.id);
+            if(elem.value == "" || elem.value.length == 0){
+              flag++;
+            }
+          }
+        }
+        //console.log("flag == " + flag);
+        if(flag == 1 && (ele.value == "" || ele.value.length == 0)) addoption();
+        //addoption();
+      }
+
+      function addoption(){
+        optionCount++;
+        var fieldset = document.getElementById("options-fieldset");
+        var id = "option" + optionCount;
+
+        var option = document.createElement("INPUT");
+        option.setAttribute("name", id);
+        option.setAttribute("id", id);
+        option.setAttribute("data-type", "option");
+        option.setAttribute("placeholder", "Option " + optionCount);
+        option.setAttribute("type", "text");
+        option.setAttribute("onfocus", "addOptionBefore(this)");
+        //option.addEventListener("focus", addOptionBefore);
+        //option.setAttribute("class", "option-style");
+
+        fieldset.appendChild(option);
+
+      }
+
+      function getPollOptions(){
+        var optionElements = document.getElementsByTagName("input");
+        optionsArray = [];
+        for(var i = 0; i < optionElements.length; i++){
+          var elem = optionElements[i];
+          if(elem.getAttribute("data-type") == "option"){
+            if(elem.value == "" || elem.value.length == 0) continue;
+
+            var option = {"id": elem.id, "option": elem.value};
+            optionsArray.push(option);
+          }
+        }
+
+        console.log(optionsArray);
+        return encodeURIComponent(JSON.stringify(optionsArray));
+      }
+
+
+      function savePoll(){
+        
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            console.log(this.responseText);
+            res = JSON.parse(this.responseText)
+            if(res.success){
+                window.open("/quiz/?poll_id=" + res.pollId);
+            } else {
+              alert("error in creating poll");
+            }
+          }
+        };
+
+        
+        var pollDescription = document.getElementById("poll_description").value;
+        var pollName = document.getElementById("poll_name").value;
+        var pollOptions = getPollOptions();
+
+        var token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+        
+        var q = "poll_name="+pollName+"&poll_description="+pollDescription+"&poll_options="+pollOptions;
+        
+        console.log(q);
+        
+        xhttp.open("POST", "create-poll/", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhttp.setRequestHeader("X-CSRFToken", token);
+        xhttp.send(q);
+
+      }
+    
+
+
+    </script>
+    
+  </body>
+</html>

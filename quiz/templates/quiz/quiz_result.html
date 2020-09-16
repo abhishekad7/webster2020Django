@@ -1,0 +1,36 @@
+{% load static %}
+<html>
+  <head>
+    <title>Create Poll</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+  </head>
+  <body>
+    <div class="form-style">
+        {% if success %}
+        <fieldset>
+            <legend><span class="number">1</span>Poll Info</legend>
+            <label st>Poll Name: </label>
+            <p style="color:aqua; font-weight: bold;">{{ poll_name }}</p>
+            <label>Poll Description: </label>
+            <p style="color: greenyellow; font-style: italic;">{{ poll_description }}</p>
+
+        </fieldset>
+
+        <fieldset>
+            <legend><span class="number">2</span>Poll Result</legend>
+            
+            {% for key, result in poll_result.items %}
+                <input type="button" id="{{ key }}" value="{{result.0}} - {{ result.1 }} votes" style="cursor: pointer;">
+                <br>
+            {% endfor %}
+
+        </fieldset>
+
+        {% else %}
+            <p style="color: red;"><b>Poll {{ poll_id }} does not exist</b></p>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
